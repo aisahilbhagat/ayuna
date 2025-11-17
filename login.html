@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Light Theme - Your Colors */
+            --bg: #FFF9F3;
+            --box: #FFD6A4;
+            --text: #3B3B3B;
+            --border: #E5C299;
+            --accent: #E4B77A;
+            --white: #FFFFFF;
+            --shadow: rgba(0, 0, 0, 0.1);
+            
+            /* Input specific colors */
+            --input-bg: #FFFFFF;
+            --input-text: #3B3B3B;
+            --input-border: #E5C299;
+            --input-placeholder: #9A9A9A;
+            
+            /* Social button specific colors */
+            --social-bg: #FFFFFF;
+            --social-text: #3B3B3B;
+            --social-border: #E5C299;
+            
+            /* Icon colors */
+            --icon-color: #3B3B3B;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme - Psychology Optimized for Focus */
+            --bg: #1C1E26;
+            --box: #2D3142;
+            --text: #E8E6E3;
+            --border: #4A4E69;
+            --accent: #D4A574;
+            --white: #F0EDE6;
+            --shadow: rgba(0, 0, 0, 0.4);
+            
+            /* Input specific colors for dark mode */
+            --input-bg: #3A3F58;
+            --input-text: #E8E6E3;
+            --input-border: #5B6280;
+            --input-placeholder: #9CA3B8;
+            
+            /* Social button specific colors for dark mode */
+            --social-bg: #3A3F58;
+            --social-text: #E8E6E3;
+            --social-border: #5B6280;
+            
+            /* Icon colors for dark mode */
+            --icon-color: #D4A574;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            padding: 20px;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--box);
+            border: 2px solid var(--border);
+            color: var(--text);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow);
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent);
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        .container {
+            background: var(--box);
+            padding: 50px 40px;
+            border-radius: 20px;
+            border: 3px solid var(--border);
+            box-shadow: 0 10px 40px var(--shadow);
+            width: 100%;
+            max-width: 450px;
+            transition: all 0.3s ease;
+        }
+
+        .container:hover {
+            box-shadow: 0 15px 50px var(--shadow);
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--text);
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--text);
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--input-border);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--input-bg);
+            color: var(--input-text);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input[type="text"]::placeholder,
+        input[type="email"]::placeholder,
+        input[type="password"]::placeholder {
+            color: var(--input-placeholder);
+            opacity: 1;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(228, 183, 122, 0.3), 0 4px 12px var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        /* Dark mode focus state */
+        [data-theme="dark"] input[type="text"]:focus,
+        [data-theme="dark"] input[type="email"]:focus,
+        [data-theme="dark"] input[type="password"]:focus {
+            box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.3), 0 4px 12px var(--shadow);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-primary:hover {
+            background: var(--border);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+            color: var(--text);
+            opacity: 0.7;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .divider span {
+            padding: 0 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn-social {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--social-border);
+            border-radius: 10px;
+            background: var(--social-bg);
+            color: var(--social-text);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-social:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .btn-social i {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-social:hover i {
+            transform: scale(1.1);
+        }
+
+        /* Google Button Specific Styles */
+        .btn-google:hover {
+            background: #EA4335;
+            border-color: #EA4335;
+            color: white;
+        }
+
+        /* GitHub Button Specific Styles */
+        .btn-github:hover {
+            background: #24292e;
+            border-color: #24292e;
+            color: white;
+        }
+
+        /* Enhanced styling for dark mode */
+        [data-theme="dark"] .btn-social {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="dark"] .btn-social:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Icon colors for better visibility in dark mode */
+        [data-theme="dark"] .btn-google i {
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .btn-github i {
+            color: #8B949E;
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .toggle-form a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-form a:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+
+        /* Popup Styles */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        .popup {
+            background: var(--box);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid var(--border);
+            box-shadow: 0 20px 60px var(--shadow);
+            text-align: center;
+            max-width: 400px;
+            animation: popIn 0.4s ease;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .popup-icon {
+            width: 70px;
+            height: 70px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: var(--text);
+        }
+
+        .popup h3 {
+            color: var(--text);
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .popup p {
+            color: var(--text);
+            opacity: 0.8;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .popup .btn {
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .container {
+                padding: 35px 25px;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+
+            .theme-toggle {
+                top: 15px;
+                right: 15px;
+                width: 45px;
+                height: 45px;
+            }
+
+            .social-login {
+                flex-direction: column;
+            }
+        }
+
+        /* Password Toggle Icon */
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 42px;
+            cursor: pointer;
+            color: var(--icon-color);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        /* Enhanced password toggle for dark mode */
+        [data-theme="dark"] .password-toggle {
+            color: var(--icon-color);
+            opacity: 0.8;
+        }
+
+        [data-theme="dark"] .password-toggle:hover {
+            opacity: 1;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon" id="theme-icon"></i>
+    </button>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Login Form -->
+        <div class="form-container active" id="loginForm">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Login to continue your journey</p>
+
+            <form onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label for="login-email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="login-email" 
+                        placeholder="Enter your email" 
+                        required
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input 
+                        type="password" 
+                        id="login-password" 
+                        placeholder="Enter your password" 
+                        required
+                    >
+                    <i class="fas fa-eye password-toggle" onclick="togglePassword('login-password')"></i>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Login
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>OR CONTINUE WITH</span>
+            </div>
+
+            <div class="social-login">
+                <button class="btn-social btn-google" onclick="handleSocialLogin('Google')">
+                    <i class="fab fa-google"></i>
+                    Google
+                </button>
+                <button class="btn-social btn-github" onclick="handleSocialLogin('GitHub')">
+                    <i class="fab fa-github"></i>
+                    GitHub
+                </button>
+            </div>
+
+            <div class="toggle-form">
+                Don't have an account? 
+                <a onclick="toggleForms()">Register Now</a>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="form-container" id="registerForm">
+            <h2>Create Account</h2>
+            <p class="subtitle">Join us and start your journey</p>
+
+            <form onsubmit="handleRegister(event)">
+                <div class="input-group">
+                    <label for="register-name">Full Name</label>
+                    <input 
+                        type="text" 
+                        id="register-name" 
+                        placeholder="Enter your full name" 
+                        required
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label for="register-email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="register-email" 
+                        placeholder="Enter your email" 
+                        required
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label for="register-password">Password</label>
+                    <input 
+                        type="password" 
+                        id="register-password" 
+                        placeholder="Create a password" 
+                        required
+                        minlength="6"
+                    >
+                    <i class="fas fa-eye password-toggle" onclick="togglePassword('register-password')"></i>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Register
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>OR REGISTER WITH</span>
+            </div>
+
+            <div class="social-login">
+                <button class="btn-social btn-google" onclick="handleSocialLogin('Google')">
+                    <i class="fab fa-google"></i>
+                    Google
+                </button>
+                <button class="btn-social btn-github" onclick="handleSocialLogin('GitHub')">
+                    <i class="fab fa-github"></i>
+                    GitHub
+                </button>
+            </div>
+
+            <div class="toggle-form">
+                Already have an account? 
+                <a onclick="toggleForms()">Login Here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Popup -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup">
+            <div class="popup-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3>Registration Successful!</h3>
+            <p>Your account has been created successfully. Please login to continue.</p>
+            <button class="btn btn-primary" onclick="closePopup()">
+                Continue to Login
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // ENHANCED THEME MANAGEMENT SYSTEM
+        // ========================================
+        
+        /**
+         * Get system's preferred color scheme
+         * @returns {string} 'dark' or 'light'
+         */
+        function getSystemTheme() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            }
+            return 'light';
+        }
+
+        /**
+         * Apply theme to the document
+         * @param {string} theme - 'dark' or 'light'
+         */
+        function applyTheme(theme) {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+
+            if (theme === 'dark') {
+                html.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+            } else {
+                html.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon';
+            }
+        }
+
+        /**
+         * Initialize theme on page load
+         * Priority: 1. User preference (localStorage) 2. System preference
+         */
+        function initializeTheme() {
+            const userPreference = localStorage.getItem('theme');
+            
+            if (userPreference) {
+                // User has manually set a preference
+                console.log('🎨 Loading user theme preference:', userPreference);
+                applyTheme(userPreference);
+            } else {
+                // No user preference, use system preference
+                const systemTheme = getSystemTheme();
+                console.log('🖥️ Loading system theme preference:', systemTheme);
+                applyTheme(systemTheme);
+            }
+        }
+
+        /**
+         * Toggle theme manually (user action)
+         * Saves preference to override system setting
+         */
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            console.log('👤 User manually changed theme to:', newTheme);
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        /**
+         * Listen for system theme changes
+         * Only applies if user hasn't set a manual preference
+         */
+        function watchSystemTheme() {
+            if (window.matchMedia) {
+                const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                
+                darkModeQuery.addEventListener('change', (e) => {
+                    const userPreference = localStorage.getItem('theme');
+                    
+                    // Only auto-switch if user hasn't set a manual preference
+                    if (!userPreference) {
+                        const newTheme = e.matches ? 'dark' : 'light';
+                        console.log('🔄 System theme changed to:', newTheme);
+                        applyTheme(newTheme);
+                    }
+                });
+            }
+        }
+
+        // ========================================
+        // INITIALIZE ON PAGE LOAD
+        // ========================================
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeTheme();
+            watchSystemTheme();
+            console.log('✅ Theme system initialized');
+        });
+
+        // ========================================
+        // FORM MANAGEMENT
+        // ========================================
+
+        /**
+         * Toggle between Login and Register forms
+         */
+        function toggleForms() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+
+            loginForm.classList.toggle('active');
+            registerForm.classList.toggle('active');
+        }
+
+        /**
+         * Handle Login form submission
+         */
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            console.log('🔐 Login attempt:', { email });
+            
+            // Simulate API call
+            setTimeout(() => {
+                window.location.href = 'home.html';
+            }, 500);
+        }
+
+        /**
+         * Handle Register form submission
+         */
+        function handleRegister(event) {
+            event.preventDefault();
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+
+            console.log('📝 Registration attempt:', { name, email });
+            
+            // Simulate API call
+            setTimeout(() => {
+                document.getElementById('popupOverlay').classList.add('active');
+            }, 500);
+        }
+
+        /**
+         * Close registration success popup
+         */
+        function closePopup() {
+            document.getElementById('popupOverlay').classList.remove('active');
+            toggleForms(); // Switch to login form
+            
+            // Clear register form
+            document.getElementById('register-name').value = '';
+            document.getElementById('register-email').value = '';
+            document.getElementById('register-password').value = '';
+        }
+
+        /**
+         * Handle Social Login (Google/GitHub)
+         */
+        function handleSocialLogin(provider) {
+            console.log(`🔗 ${provider} login initiated`);
+            alert(`${provider} OAuth flow would be initiated here`);
+            
+            // Implement OAuth flow
+            if (provider === 'Google') {
+                // window.location.href = 'YOUR_GOOGLE_OAUTH_URL';
+            } else if (provider === 'GitHub') {
+                // window.location.href = 'YOUR_GITHUB_OAUTH_URL';
+            }
+        }
+
+        /**
+         * Toggle password visibility
+         */
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.target;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        /**
+         * Close popup when clicking outside
+         */
+        document.getElementById('popupOverlay').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closePopup();
+            }
+        });
+
+        /**
+         * Reset to system theme (removes user preference)
+         * Call this from console if needed: resetToSystemTheme()
+         */
+        function resetToSystemTheme() {
+            localStorage.removeItem('theme');
+            const systemTheme = getSystemTheme();
+            applyTheme(systemTheme);
+            console.log('🔄 Reset to system theme:', systemTheme);
+        }
+    </script>
+</body>
+</html>
