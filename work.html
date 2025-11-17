@@ -241,7 +241,7 @@
         /* Projects Grid */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Reduced from 280px */
             gap: 25px;
             margin-top: 30px;
         }
@@ -266,8 +266,8 @@
         }
 
         .project-icon {
-            width: 90px; /* Changed from 60px */
-            height: 90px; /* Changed from 60px */
+            width: 60px; /* Reduced from 90px */
+            height: 60px; /* Reduced from 90px */
             background: var(--accent);
             border-radius: 12px;
             display: flex;
@@ -298,6 +298,32 @@
              */
              filter: brightness(0) invert(1);
         }
+
+        /* --- NEW OVERRIDES --- */
+        /* Force light theme for project cards in dark mode */
+        [data-theme="dark"] .project-card {
+            background: #FFFFFF; /* :root --card-bg */
+            border-color: #E5C299; /* :root --border */
+            box-shadow: rgba(0, 0, 0, 0.1); /* :root --shadow */
+        }
+
+        [data-theme="dark"] .project-card:hover {
+            background: #FFE8C5; /* :root --card-hover */
+            border-color: #E4B77A; /* :root --accent */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* :root --shadow */
+        }
+
+        [data-theme="dark"] .project-card .project-title,
+        [data-theme="dark"] .project-card .project-meta {
+            color: #3B3B3B; /* :root --text */
+        }
+
+        /* Force light theme for project card icons in dark mode */
+        [data-theme="dark"] .project-icon.project-icon-svg img {
+            filter: invert(0); /* Revert filter to light mode default */
+        }
+        /* --- END NEW OVERRIDES --- */
+
 
         .project-card:hover .project-icon {
             transform: scale(1.1) rotate(5deg);
@@ -528,6 +554,76 @@
              */
              filter: brightness(0) invert(1);
         }
+
+        /* --- NEW OVERRIDES --- */
+        /* Force light theme for modal in dark mode */
+        [data-theme="dark"] .modal-content {
+            background: #FFFFFF; /* :root --card-bg */
+            border-color: #E5C299; /* :root --border */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* :root --shadow */
+        }
+
+        [data-theme="dark"] .modal-content h2,
+        [data-theme="dark"] .form-group label {
+            color: #3B3B3B; /* :root --text */
+        }
+
+        [data-theme="dark"] .form-group input[type="text"] {
+            color: #3B3B3B; /* :root --text */
+            background-color: #FFF; /* :root --input-bg */
+            border-color: #E5C299; /* :root --border */
+        }
+
+        [data-theme="dark"] .form-group input[type="text"]:focus {
+            border-color: #E4B77A; /* :root --accent */
+            box-shadow: 0 0 0 3px rgba(228, 183, 122, 0.5); /* :root --accent with alpha */
+        }
+
+        [data-theme="dark"] .icon-picker {
+            background: #FFF; /* :root --input-bg */
+            border-color: #E5C299; /* :root --border */
+        }
+
+        [data-theme="dark"] .icon-option {
+            background-color: #FFFFFF; /* :root --card-bg */
+        }
+
+        [data-theme="dark"] .icon-option:hover {
+            background-color: #FFE8C5; /* :root --card-hover */
+        }
+
+        [data-theme="dark"] .icon-option.selected {
+            border-color: #E4B77A; /* :root --accent */
+            background-color: #FFE8C5; /* :root --card-hover */
+            box-shadow: 0 0 0 3px rgba(228, 183, 122, 0.5); /* :root --accent with alpha */
+        }
+
+        /* Force light theme for modal icons in dark mode */
+        [data-theme="dark"] .icon-option img {
+            filter: invert(0); /* Revert filter to light mode default */
+        }
+
+        [data-theme="dark"] .btn-primary {
+            background-color: #E4B77A; /* :root --accent */
+            color: #3B3B3B; /* :root --text */
+            border-color: #E5C299; /* :root --border */
+        }
+
+        [data-theme="dark"] .btn-primary:hover {
+            background-color: #E5C299; /* :root --border */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* :root --shadow */
+        }
+
+        [data-theme="dark"] .btn-secondary {
+            background-color: #FFE8C5; /* :root --card-hover */
+            color: #3B3B3B; /* :root --text */
+            border-color: #E5C299; /* :root --border */
+        }
+
+        [data-theme="dark"] .btn-secondary:hover {
+            background-color: #FFF9F3; /* :root --bg */
+        }
+        /* --- END NEW OVERRIDES --- */
 
 
         .form-actions {
@@ -797,7 +893,7 @@
                 // Simplified the mapping, as we no longer need to check for emojis.
                 // It now assumes all projects use SVG icons.
                 projectsGrid.innerHTML = projects.map(project => {
-                    const iconHtml = `<img src="${project.icon}" alt="Project Icon" style="width: 90px; height: 90px;">`; /* Changed from 60px */
+                    const iconHtml = `<img src="${project.icon}" alt="Project Icon" style="width: 60px; height: 60px;">`; /* Reduced from 90px */
                     
                     // Always apply the 'project-icon-svg' class
                     const iconClass = 'project-icon project-icon-svg';
