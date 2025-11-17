@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ayuna - Dashboard</title>
     <style>
+        /* ... existing code ... */
         * {
             margin: 0;
             padding: 0;
@@ -47,6 +48,8 @@
             transition: background-color 0.3s ease, color 0.3s ease;
             padding: 0;
             overflow-x: hidden;
+            /* Hide body until auth check is complete */
+            visibility: hidden;
         }
 
         /* Header Section */
@@ -70,7 +73,7 @@
             font-weight: 700;
             color: var(--text);
         }
-
+        /* ... existing code ... */
         .brand-tagline {
             font-size: 1rem;
             font-weight: 400;
@@ -175,6 +178,7 @@
             color: var(--text);
             text-decoration: none;
             transition: background-color 0.2s ease;
+            cursor: pointer; /* Add cursor pointer for logout */
         }
         
         .profile-menu a:hover {
@@ -226,7 +230,7 @@
             box-shadow: 0 4px 20px var(--shadow);
             position: relative;
         }
-
+        /* ... existing code ... */
         .add-project-btn:hover {
             transform: rotate(90deg) scale(1.1);
             background: var(--border);
@@ -416,7 +420,7 @@
         .project-card {
             animation: fadeIn 0.5s ease forwards;
         }
-
+        /* ... existing code ... */
         .project-card:nth-child(1) { animation-delay: 0.1s; }
         .project-card:nth-child(2) { animation-delay: 0.2s; }
         .project-card:nth-child(3) { animation-delay: 0.3s; }
@@ -562,7 +566,7 @@
             border-color: #E5C299; /* :root --border */
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* :root --shadow */
         }
-
+        /* ... existing code ... */
         [data-theme="dark"] .modal-content h2,
         [data-theme="dark"] .form-group label {
             color: #3B3B3B; /* :root --text */
@@ -663,12 +667,13 @@
         .btn-secondary:hover {
             background-color: var(--bg);
         }
-
+        /* ... existing code ... */
     </style>
 </head>
 <body>
     <!-- Header -->
     <header>
+        <!-- ... existing code ... -->
         <div class="brand-section">
             <span class="brand">Ayuna</span>
             <span class="brand-tagline">
@@ -694,7 +699,8 @@
                 </button>
                 <div class="profile-menu" id="profileMenu">
                     <a href="#">Account</a>
-                    <a href="login.html">Log Out</a>
+                    <!-- Updated Log Out link -->
+                    <a onclick="handleLogout()">Log Out</a>
                 </div>
             </div>
         </div>
@@ -702,6 +708,7 @@
 
     <!-- Main Content -->
     <main>
+        <!-- ... existing code ... -->
         <div class="dashboard-header">
             <h1 class="dashboard-title">Your Projects</h1>
             <button class="add-project-btn" onclick="openCreateProjectModal()"></button>
@@ -722,6 +729,7 @@
 
     <!-- Create Project Modal -->
     <div class="modal-overlay" id="createProjectModalOverlay">
+        <!-- ... existing code ... -->
         <div class="modal-content" id="createProjectModalContent">
             <h2>Create New Project</h2>
             <form id="createProjectForm">
@@ -743,6 +751,53 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+        // Import Auth functions
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2-Xbb9yP-p1tr5qci59Foq-gdRXgP0-I",
+            authDomain: "ayuna-aisahil.firebaseapp.com",
+            projectId: "ayuna-aisahil",
+            storageBucket: "ayuna-aisahil.firebasestorage.app",
+            messagingSenderId: "449502543217",
+            appId: "1:449502543217:web:c2a1e24b11ca273cf14ad0",
+            measurementId: "G-E6YX7SXREH"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        // Initialize Firebase Authentication and get a reference to the service
+        const auth = getAuth(app);
+
+        // --- AUTHENTICATION CHECK ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in.
+                console.log('User is logged in:', user.uid);
+                // Show the page content
+                document.body.style.visibility = 'visible';
+                // Manually trigger DOMContentLoaded logic AFTER auth check
+                initializePageContent();
+            } else {
+                // User is signed out.
+                console.log('User is not logged in, redirecting to login.html');
+                // Redirect to login page
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Make auth functions available globally for the next script
+        window.firebaseAuth = {
+            auth,
+            signOut
+        };
+    </script>
+
 
     <script>
         // ========================================
@@ -750,6 +805,7 @@
         // ========================================
         
         const typingText = "silence for the mind that builds";
+        /* ... existing code ... */
         const typingElement = document.getElementById('typing-text');
         let charIndex = 0;
         let isDeleting = false;
@@ -779,9 +835,10 @@
         }
 
         // Start typing animation on load
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(typeWriter, 500);
-        });
+        // window.addEventListener('DOMContentLoaded', () => {
+        //     setTimeout(typeWriter, 500);
+        // });
+        // NOTE: This is now called from initializePageContent()
 
         // ========================================
         // THEME MANAGEMENT
@@ -806,7 +863,7 @@
                 themeIcon.textContent = '🌙';
             }
         }
-
+        /* ... existing code ... */
         function initializeTheme() {
             const userPreference = localStorage.getItem('theme');
             
@@ -869,11 +926,28 @@
             }
         });
 
+        // --- NEW LOGOUT FUNCTION ---
+        function handleLogout() {
+            console.log('Logging out...');
+            const { auth, signOut } = window.firebaseAuth;
+            if (auth) {
+                signOut(auth).then(() => {
+                    // Sign-out successful.
+                    console.log('Logout successful, redirecting to login.html');
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    // An error happened.
+                    console.error('Logout failed:', error);
+                    alert('Logout failed. Please try again.');
+                });
+            }
+        }
+
 
         // ========================================
         // PROJECT MANAGEMENT
         // ========================================
-
+        /* ... existing code ... */
         // Sample projects array has been removed.
 
         function loadProjects() {
@@ -915,14 +989,14 @@
             window.location.href = 'work.html';
             // alert(`Opening project ${projectId}. (Project detail page coming soon!)`);
         }
-
+        /* ... existing code ... */
         // REMOVED: function redirectToWork() {}
         // The + button now opens the modal
 
         // ========================================
         // CREATE PROJECT MODAL
         // ========================================
-
+        /* ... existing code ... */
         // DEFINE YOUR SVG ICON PATHS HERE
         // The user can add their paths to this array
         const userIconPaths = [
@@ -1008,6 +1082,7 @@
             populateIconPicker(); // Re-populate icons
         }
 
+visible-part-of-long-file-ends-here
         function closeCreateProjectModal() {
             document.body.classList.remove('modal-open'); // Unblur background
             modalOverlay.classList.remove('show');
@@ -1027,12 +1102,13 @@
             const title = document.getElementById('projectTitle').value;
             
             if (!title.trim()) {
-                alert('Please enter a project title.');
+                // Use custom alert/modal later
+                console.warn('Project title is empty');
                 return;
             }
             
             if (!selectedIconPath) {
-                alert('Please select an icon.');
+                console.warn('No icon selected');
                 return;
             }
 
@@ -1061,12 +1137,17 @@
         // INITIALIZE
         // ========================================
         
-        window.addEventListener('DOMContentLoaded', () => {
+        // This function is now called by the auth state listener
+        function initializePageContent() {
             initializeTheme();
             watchSystemTheme();
             loadProjects(); // This will now load purely from localStorage
+            setTimeout(typeWriter, 500); // Start typing animation
             console.log('✅ Dashboard initialized');
-        });
+        }
+
+        // Removed the DOMContentLoaded listener as auth check handles initialization
+        // window.addEventListener('DOMContentLoaded', () => { ... });
     </script>
 </body>
 </html>
