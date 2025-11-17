@@ -291,7 +291,12 @@
         }
 
         [data-theme="dark"] .project-icon.project-icon-svg img {
-             filter: invert(1); /* Invert icons for dark mode */
+             /* Was: filter: invert(1);
+                This new filter forces the icon to black first (brightness(0))
+                and then inverts it to pure white (invert(1)).
+                This is more robust for icons that aren't pure black.
+             */
+             filter: brightness(0) invert(1);
         }
 
         .project-card:hover .project-icon {
@@ -518,7 +523,10 @@
         }
         
         [data-theme="dark"] .icon-option img {
-             filter: invert(1); /* Invert icons for dark mode */
+             /* Was: filter: invert(1);
+                Applying the same fix here to the modal.
+             */
+             filter: brightness(0) invert(1);
         }
 
 
