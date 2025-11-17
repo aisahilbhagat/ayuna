@@ -757,6 +757,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
         // Import Auth functions
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+        // Import Firestore functions
+        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -773,6 +775,8 @@
         const app = initializeApp(firebaseConfig);
         // Initialize Firebase Authentication and get a reference to the service
         const auth = getAuth(app);
+        // Initialize Cloud Firestore and get a reference to the service
+        const db = getFirestore(app);
 
         // --- AUTHENTICATION CHECK ---
         onAuthStateChanged(auth, (user) => {
@@ -791,10 +795,17 @@
             }
         });
 
-        // Make auth functions available globally for the next script
+        // Make auth and firestore functions available globally for the next script
         window.firebaseAuth = {
             auth,
-            signOut
+            signOut,
+            db,
+            collection,
+            query,
+            where,
+            getDocs,
+            addDoc,
+            serverTimestamp
         };
     </script>
 
@@ -947,40 +958,98 @@
         // ========================================
         // PROJECT MANAGEMENT
         // ========================================
-        /* ... existing code ... */
-        // Sample projects array has been removed.
 
-        function loadProjects() {
+        /**
+         * Formats a Firestore Timestamp into a readable date string.
+         * @param {object} timestamp - The Firestore Timestamp object (e.g., { seconds: 167... })
+         * @returns {string} - A formatted date string (e.g., "12 Feb 2025")
+         */
+        function formatDate(timestamp) {
+            if (!timestamp || typeof timestamp.seconds !== 'number') {
+                return 'Just now'; // Fallback for new or invalid timestamps
+            }
+            const date = new Date(timestamp.seconds * 1000);
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            return date.toLocaleDateString('en-GB', options); // 'en-GB' gives "12 Feb 2025" format
+        }
+
+        // loadProjects is now async and fetches from Firestore
+        async function loadProjects() {
             const projectsGrid = document.getElementById('projectsGrid');
             const emptyState = document.getElementById('emptyState');
             
-            // Load projects *only* from localStorage. Default to an empty array.
-            let projects = JSON.parse(localStorage.getItem('projects')) || [];
+            // Get Firebase tools from the module script
+            const { auth, db, collection, query, where, getDocs } = window.firebaseAuth;
 
-            if (projects.length === 0) {
-                projectsGrid.style.display = 'none';
+            if (!auth || !db) {
+                console.error("Firebase is not ready.");
                 emptyState.style.display = 'block';
-            } else {
-                projectsGrid.style.display = 'grid';
-                emptyState.style.display = 'none';
-                
-                // Simplified the mapping, as we no longer need to check for emojis.
-                // It now assumes all projects use SVG icons.
-                projectsGrid.innerHTML = projects.map(project => {
-                    const iconHtml = `<img src="${project.icon}" alt="Project Icon" style="width: 60px; height: 60px;">`; /* Reduced from 90px */
-                    
-                    // Always apply the 'project-icon-svg' class
-                    const iconClass = 'project-icon project-icon-svg';
-
-                    return `
-                        <div class="project-card" onclick="openProject(${project.id})">
-                            <div class="${iconClass}">${iconHtml}</div>
-                            <div class="project-title">${project.title}</div>
-                            <div class="project-meta">Updated ${project.date}</div>
-                        </div>
-                    `
-                }).join('');
+                projectsGrid.style.display = 'none';
+                return;
             }
+
+            const user = auth.currentUser;
+            if (!user) {
+                console.log("No user found, loadProjects will not run.");
+                return; 
+            }
+
+            try {
+                // Query projects where ownerUid matches the current user's UID
+                const q = query(collection(db, "projects"), where("ownerUid", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+
+                let projects = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    projects.push({
+                        id: doc.id,
+                        title: data.title,
+                        icon: data.icon,
+                        date: formatDate(data.createdAt) // Format the timestamp
+                    });
+                });
+
+                // Log the count as requested
+                console.log("Projects loaded:", projects.length);
+
+                if (projects.length === 0) {
+                    projectsGrid.style.display = 'none';
+                    emptyState.style.display = 'block';
+                } else {
+                    projectsGrid.style.display = 'grid';
+                    emptyState.style.display = 'none';
+                    
+                    // Render projects using the same logic as before
+                    projectsGrid.innerHTML = projects.map(project => {
+                        const iconHtml = `<img src="${project.icon}" alt="Project Icon" style="width: 60px; height: 60px;">`;
+                        const iconClass = 'project-icon project-icon-svg';
+
+                        // Pass the string ID to openProject
+                        return `
+                            <div class="project-card" onclick="openProject('${project.id}')">
+                                <div class="${iconClass}">${iconHtml}</div>
+                                <div class="project-title">${project.title}</div>
+                                <div class="project-meta">Created ${project.date}</div>
+                            </div>
+                        `
+                    }).join('');
+                }
+
+            } catch (error) {
+                console.error("Error loading projects: ", error);
+                emptyState.style.display = 'block';
+                emptyState.querySelector('.empty-state-text').textContent = 'Error loading projects';
+                projectsGrid.style.display = 'none';
+            }
+        }
+
+        function openProject(projectId) {
+            console.log('Opening project:', projectId);
+            // Navigate to project details page
+            // We can pass the project ID in the URL
+            window.location.href = `work.html?project=${projectId}`;
+        }
         }
 
         function openProject(projectId) {
@@ -996,7 +1065,7 @@
         // ========================================
         // CREATE PROJECT MODAL
         // ========================================
-        /* ... existing code ... */
+
         // DEFINE YOUR SVG ICON PATHS HERE
         // The user can add their paths to this array
         const userIconPaths = [
@@ -1095,14 +1164,13 @@ visible-part-of-long-file-ends-here
             }
         });
 
-        // Handle the project creation
-        createProjectForm.addEventListener('submit', function(event) {
+        // Handle the project creation - NOW SAVES TO FIRESTORE
+        createProjectForm.addEventListener('submit', async function(event) {
             event.preventDefault(); // Stop form from submitting normally
             
             const title = document.getElementById('projectTitle').value;
             
             if (!title.trim()) {
-                // Use custom alert/modal later
                 console.warn('Project title is empty');
                 return;
             }
@@ -1112,24 +1180,42 @@ visible-part-of-long-file-ends-here
                 return;
             }
 
-            const newProject = {
-                id: Date.now(), // Simple unique ID
-                title: title,
-                icon: selectedIconPath,
-                date: 'Just now'
-                // Removed the 'isEmoji' flag
-            };
+            // Get Firebase tools
+            const { auth, db, addDoc, collection, serverTimestamp } = window.firebaseAuth;
+            const user = auth.currentUser;
 
-            // Get existing projects, add the new one, and save
-            let projects = JSON.parse(localStorage.getItem('projects')) || [];
-            projects.unshift(newProject); // Add to the beginning
-            localStorage.setItem('projects', JSON.stringify(projects));
-            
-            loadProjects(); // Refresh the dashboard grid
-            closeCreateProjectModal(); // Close the modal
-            
-            // Clear selection for next time
-            selectedIconPath = '';
+            if (!user || !db) {
+                console.error("Cannot create project, user or db not available");
+                alert("Error: Not logged in.");
+                return;
+            }
+
+            try {
+                // Create the new project object for Firestore
+                const newProject = {
+                    title: title,
+                    icon: selectedIconPath,
+                    ownerUid: user.uid,
+                    createdAt: serverTimestamp(), // Use server timestamp
+                    updatedAt: serverTimestamp(),
+                    nodeCount: 0,
+                    connectionCount: 0
+                };
+
+                // Add the new project to the "projects" collection
+                const docRef = await addDoc(collection(db, "projects"), newProject);
+                console.log("Project created with ID: ", docRef.id);
+                
+                loadProjects(); // Refresh the dashboard grid from Firestore
+                closeCreateProjectModal(); // Close the modal
+                
+                // Clear selection for next time
+                selectedIconPath = '';
+
+            } catch (error) {
+                console.error("Error creating project: ", error);
+                alert("Failed to create project. Please try again.");
+            }
         });
 
 
