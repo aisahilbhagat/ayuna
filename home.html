@@ -14,478 +14,7 @@
 
         :root {
             /* Light Theme */
-            --bg: #FFF9F3;<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Ayuna - Dashboard</title>
-    <style>
-        /* (kept original CSS, unchanged) */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --bg: #FFF9F3; --box: #FFD6A4; --text: #3B3B3B; --border: #E5C299;
-            --accent: #E4B77A; --white: #FFFFFF; --shadow: rgba(0,0,0,0.1);
-            --card-bg: #FFFFFF; --card-hover: #FFE8C5; --input-bg: #FFF;
-        }
-        [data-theme="dark"] {
-            --bg:#1C1E26; --box:#2D3142; --text:#E8E6E3; --border:#4A4E69;
-            --accent:#D4A574; --white:#F0EDE6; --shadow: rgba(0,0,0,0.4);
-            --card-bg:#3A3F58; --card-hover:#4A4E69; --input-bg:#2D3142;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            transition: background-color 0.3s ease, color 0.3s ease;
-            padding: 0;
-            overflow-x: hidden;
-            visibility: hidden; /* Hidden until auth check finishes */
-        }
-
-        header {
-            position: fixed; top: 0; left: 0; right: 0; padding: 30px 50px;
-            display:flex; justify-content: space-between; align-items:center;
-            background: var(--bg); z-index:100; border-bottom: 2px solid var(--border);
-            transition: filter 0.3s ease;
-        }
-        .brand { font-size:1.8rem; font-weight:700; color:var(--text); }
-        .brand-tagline { font-size:1rem; font-weight:400; color:var(--accent); margin-left:15px; display:inline-block; }
-        .typing-cursor { display:inline-block; width:2px; height:1em; background-color:var(--accent); margin-left:2px; animation: blink 0.7s infinite; }
-        @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
-
-        .header-right { display:flex; align-items:center; gap:20px; }
-        .theme-toggle, .profile-toggle { background:var(--box); border:2px solid var(--border); color:var(--text); width:45px; height:45px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1.2rem; transition: all 0.3s ease; box-shadow:0 4px 15px var(--shadow); }
-        .theme-toggle:hover, .profile-toggle:hover { background: var(--accent); transform: scale(1.1); }
-
-        .profile-menu { display:none; position:absolute; top:60px; right:0; background:var(--card-bg); border:2px solid var(--border); border-radius:10px; box-shadow:0 8px 25px var(--shadow); min-width:150px; z-index:101; overflow:hidden; }
-        .profile-menu.show { display:block; }
-        .profile-menu a { display:block; padding:12px 20px; font-size:0.95rem; color:var(--text); text-decoration:none; transition: background-color .2s; cursor:pointer; }
-        .profile-menu a:hover { background-color:var(--card-hover); }
-
-        main { margin-top:120px; padding:40px 50px; max-width:1400px; margin-left:auto; margin-right:auto; transition: filter .3s ease; }
-        .dashboard-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:40px; }
-        .dashboard-title { font-size:2.5rem; font-weight:700; color:var(--text); }
-
-        .add-project-btn { width:60px; height:60px; background:var(--accent); border:3px solid var(--border); border-radius:50%; color:var(--text); font-size:2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .3s; box-shadow:0 4px 20px var(--shadow); position:relative; }
-        .add-project-btn:hover { transform: rotate(90deg) scale(1.1); background:var(--border); box-shadow:0 6px 30px var(--shadow); }
-        .add-project-btn::before { content:'+'; font-weight:300; }
-
-        .projects-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap:25px; margin-top:30px; }
-        .project-card { background:var(--card-bg); border:3px solid var(--border); border-radius:15px; padding:30px; cursor:pointer; transition: all .3s; box-shadow:0 4px 15px var(--shadow); position:relative; overflow:hidden; }
-        .project-card:hover { transform: translateY(-5px); box-shadow:0 8px 30px var(--shadow); background:var(--card-hover); border-color:var(--accent); }
-        .project-icon { width:60px; height:60px; background:var(--accent); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:2rem; margin-bottom:20px; transition:all .3s; }
-        .project-icon.project-icon-svg { background:transparent; font-size:0; }
-        .project-icon.project-icon-svg img { filter: invert(0); transition:filter .3s; width:100%; height:100%; object-fit:contain; }
-        [data-theme="dark"] .project-icon.project-icon-svg img { filter: brightness(0) invert(1); }
-        .project-title { font-size:1.3rem; font-weight:600; color:var(--text); margin-bottom:10px; }
-        .project-meta { font-size:.85rem; color:var(--text); opacity:.6; }
-
-        .empty-state { text-align:center; padding:80px 20px; color:var(--text); opacity:.5; }
-        .empty-state-icon { font-size:4rem; margin-bottom:20px; }
-        .empty-state-text { font-size:1.2rem; margin-bottom:10px; }
-        .empty-state-subtext { font-size:.95rem; }
-
-        @media (max-width:768px) {
-            header { padding:20px 25px; }
-            .brand { font-size:1.3rem; }
-            .brand-tagline { display:block; margin-left:0; margin-top:5px; font-size:.85rem; }
-            main { margin-top:140px; padding:20px 25px; }
-            .dashboard-title { font-size:1.8rem; }
-            .add-project-btn { width:50px; height:50px; font-size:1.5rem; }
-            .projects-grid { grid-template-columns:1fr; }
-        }
-
-        @keyframes fadeIn { from { opacity:0; transform: translateY(20px);} to { opacity:1; transform: translateY(0);} }
-        .project-card { animation: fadeIn 0.5s ease forwards; }
-        .project-card:nth-child(1){animation-delay:0.1s}.project-card:nth-child(2){animation-delay:0.2s}.project-card:nth-child(3){animation-delay:0.3s}.project-card:nth-child(4){animation-delay:0.4s}.project-card:nth-child(5){animation-delay:0.5s}.project-card:nth-child(6){animation-delay:0.6s}
-
-        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.3); backdrop-filter: blur(5px); display:none; align-items:center; justify-content:center; z-index:1000; opacity:0; transition: opacity .3s;}
-        .modal-overlay.show { display:flex; opacity:1; }
-        body.modal-open header, body.modal-open main { filter: blur(5px); }
-        .modal-content { background:var(--card-bg); border:2px solid var(--border); border-radius:15px; box-shadow:0 8px 30px var(--shadow); padding:30px; width:90%; max-width:450px; transform: scale(.9); transition:transform .3s;}
-        .modal-overlay.show .modal-content { transform: scale(1); }
-        .modal-content h2 { font-size:1.5rem; font-weight:600; color:var(--text); margin-bottom:25px; text-align:center; }
-        .form-group { margin-bottom:20px; }
-        .form-group label { display:block; font-size:.9rem; font-weight:500; margin-bottom:8px; color:var(--text); opacity:.8; }
-        .form-group input[type="text"] { width:100%; padding:12px; font-size:1rem; color:var(--text); background-color:var(--input-bg); border:2px solid var(--border); border-radius:10px; transition:border-color .2s, box-shadow .2s; }
-        .form-group input[type="text"]:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent); }
-        .icon-picker { display:grid; grid-template-columns: repeat(auto-fill, minmax(80px,1fr)); gap:10px; max-height:150px; overflow-y:auto; padding:5px; background:var(--input-bg); border-radius:10px; border:2px solid var(--border); }
-        .icon-option { width:80px; height:80px; border:2px solid transparent; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; background-color:var(--card-bg); }
-        .icon-option:hover { background-color:var(--card-hover); }
-        .icon-option.selected { border-color:var(--accent); background-color:var(--card-hover); box-shadow:0 0 0 3px var(--accent); }
-        .icon-option img { width:60px; height:60px; filter:invert(0); }
-        [data-theme="dark"] .icon-option img { filter: brightness(0) invert(1); }
-        .form-actions { display:flex; gap:15px; justify-content:flex-end; margin-top:30px; }
-        .btn { padding:10px 20px; font-size:.95rem; font-weight:600; border:none; border-radius:10px; cursor:pointer; transition:all .3s; }
-        .btn-primary { background-color:var(--accent); color:var(--text); border:2px solid var(--border); }
-        .btn-primary:hover { background-color:var(--border); box-shadow:0 4px 15px var(--shadow); }
-        .btn-secondary { background-color:var(--card-hover); color:var(--text); border:2px solid var(--border); }
-        .btn-secondary:hover { background-color:var(--bg); }
-    </style>
-</head>
-<body>
-    <!-- Header -->
-    <header>
-        <div class="brand-section">
-            <span class="brand">Ayuna</span>
-            <span class="brand-tagline">
-                <span id="typing-text"></span>
-                <span class="typing-cursor"></span>
-            </span>
-        </div>
-
-        <div class="header-right">
-            <button class="theme-toggle" onclick="toggleTheme()">
-                <span id="theme-icon">🌙</span>
-            </button>
-
-            <!-- Profile Dropdown -->
-            <div class="profile-dropdown">
-                <button class="profile-toggle" onclick="toggleProfileMenu()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="1"></circle>
-                        <circle cx="12" cy="5" r="1"></circle>
-                        <circle cx="12" cy="19" r="1"></circle>
-                    </svg>
-                </button>
-                <div class="profile-menu" id="profileMenu">
-                    <a href="account.html">Account</a>
-                    <a onclick="handleLogout()">Log Out</a>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main>
-        <div class="dashboard-header">
-            <h1 class="dashboard-title">Your Projects</h1>
-            <button class="add-project-btn" onclick="openCreateProjectModal()"></button>
-        </div>
-
-        <!-- Projects Grid -->
-        <div class="projects-grid" id="projectsGrid"></div>
-
-        <!-- Empty State -->
-        <div class="empty-state" id="emptyState" style="display:none;">
-            <div class="empty-state-icon">📁</div>
-            <div class="empty-state-text">No projects yet</div>
-            <div class="empty-state-subtext">Click the + button to create your first project</div>
-        </div>
-    </main>
-
-    <!-- Create Project Modal -->
-    <div class="modal-overlay" id="createProjectModalOverlay">
-        <div class="modal-content" id="createProjectModalContent">
-            <h2>Create New Project</h2>
-            <form id="createProjectForm">
-                <div class="form-group">
-                    <label for="projectTitle">Project Title</label>
-                    <input type="text" id="projectTitle" name="projectTitle" placeholder="e.g., Q4 Marketing Plan" required>
-                </div>
-                <div class="form-group">
-                    <label>Select Icon</label>
-                    <div class="icon-picker" id="iconPicker"></div>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeCreateProjectModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Project</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyC2-Xbb9yP-p1tr5qci59Foq-gdRXgP0-I",
-            authDomain: "ayuna-aisahil.firebaseapp.com",
-            projectId: "ayuna-aisahil",
-            storageBucket: "ayuna-aisahil.firebasestorage.app",
-            messagingSenderId: "449502543217",
-            appId: "1:449502543217:web:c2a1e24b11ca273cf14ad0",
-            measurementId: "G-E6YX7SXREH"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // auth check then initialize UI
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log('User is logged in:', user.uid);
-                document.body.style.visibility = 'visible';
-                initializePageContent();
-            } else {
-                console.log('User is not logged in, redirecting to login.html');
-                window.location.href = 'login.html';
-            }
-        });
-
-        // expose small API for other inline scripts
-        window.firebaseAuth = { auth, signOut, db, collection, query, where, getDocs, addDoc, serverTimestamp };
-    </script>
-
-    <script>
-        // ========================================
-        // TYPING ANIMATION
-        // ========================================
-        const typingText = "silence for the mind that builds";
-        const typingElement = document.getElementById('typing-text');
-        let charIndex = 0;
-        let isDeleting = false;
-        let typingSpeed = 100;
-        let deletingSpeed = 50;
-        let pauseTime = 2000;
-        function typeWriter() {
-            if (!isDeleting && charIndex <= typingText.length) {
-                typingElement.textContent = typingText.substring(0, charIndex);
-                charIndex++;
-                setTimeout(typeWriter, typingSpeed);
-            } else if (!isDeleting && charIndex > typingText.length) {
-                setTimeout(() => { isDeleting = true; typeWriter(); }, pauseTime);
-            } else if (isDeleting && charIndex >= 0) {
-                typingElement.textContent = typingText.substring(0, charIndex);
-                charIndex--;
-                setTimeout(typeWriter, deletingSpeed);
-            } else if (isDeleting && charIndex < 0) {
-                isDeleting = false; charIndex = 0; setTimeout(typeWriter, 500);
-            }
-        }
-
-        // ========================================
-        // THEME MANAGEMENT
-        // ========================================
-        function getSystemTheme() {
-            return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-        }
-        function applyTheme(theme) {
-            const html = document.documentElement;
-            const themeIcon = document.getElementById('theme-icon');
-            if (theme === 'dark') { html.setAttribute('data-theme','dark'); themeIcon.textContent = '☀️'; }
-            else { html.removeAttribute('data-theme'); themeIcon.textContent = '🌙'; }
-        }
-        function initializeTheme() {
-            const userPreference = localStorage.getItem('theme');
-            if (userPreference) { console.log('🎨 Loading user theme preference:', userPreference); applyTheme(userPreference); }
-            else { const systemTheme = getSystemTheme(); console.log('🖥️ Loading system theme preference:', systemTheme); applyTheme(systemTheme); }
-        }
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            console.log('👤 User manually changed theme to:', newTheme);
-            applyTheme(newTheme); localStorage.setItem('theme', newTheme);
-        }
-        function watchSystemTheme() {
-            if (window.matchMedia) {
-                const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-                darkModeQuery.addEventListener('change', (e) => {
-                    const userPreference = localStorage.getItem('theme');
-                    if (!userPreference) {
-                        const newTheme = e.matches ? 'dark' : 'light';
-                        console.log('🔄 System theme changed to:', newTheme);
-                        applyTheme(newTheme);
-                    }
-                });
-            }
-        }
-
-        // ========================================
-        // PROFILE MENU
-        // ========================================
-        function toggleProfileMenu() { document.getElementById('profileMenu').classList.toggle('show'); }
-        window.addEventListener('click', function(event) {
-            const profileMenu = document.getElementById('profileMenu');
-            const profileToggle = document.querySelector('.profile-toggle');
-            if (profileToggle && profileMenu.classList.contains('show') && !profileToggle.contains(event.target) && !profileMenu.contains(event.target)) {
-                profileMenu.classList.remove('show');
-            }
-        });
-        function handleLogout() {
-            console.log('Logging out...');
-            const { auth, signOut } = window.firebaseAuth;
-            if (auth) {
-                signOut(auth).then(() => { console.log('Logout successful, redirecting to login.html'); window.location.href = 'login.html'; })
-                .catch((error) => { console.error('Logout failed:', error); alert('Logout failed. Please try again.'); });
-            }
-        }
-
-        // ========================================
-        // PROJECT MANAGEMENT & FIRESTORE
-        // ========================================
-        function formatDate(timestamp) {
-            if (!timestamp || typeof timestamp.seconds !== 'number') return 'Just now';
-            const date = new Date(timestamp.seconds * 1000);
-            const options = { day: 'numeric', month: 'short', year: 'numeric' };
-            return date.toLocaleDateString('en-GB', options);
-        }
-
-        async function loadProjects() {
-            const projectsGrid = document.getElementById('projectsGrid');
-            const emptyState = document.getElementById('emptyState');
-            const firebase = window.firebaseAuth;
-            if (!firebase || !firebase.auth || !firebase.db) {
-                console.error("Firebase is not ready.");
-                emptyState.style.display = 'block';
-                projectsGrid.style.display = 'none';
-                return;
-            }
-            const user = firebase.auth.currentUser;
-            if (!user) { console.log("No user found, loadProjects will not run."); return; }
-
-            try {
-                const q = query(collection(firebase.db, "projects"), where("ownerUid", "==", user.uid));
-                const querySnapshot = await getDocs(q);
-                const projects = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    projects.push({
-                        id: doc.id,
-                        title: data.title || 'Untitled',
-                        icon: data.icon || '',
-                        date: formatDate(data.createdAt)
-                    });
-                });
-
-                console.log("Projects loaded:", projects.length);
-
-                if (projects.length === 0) {
-                    projectsGrid.style.display = 'none';
-                    emptyState.style.display = 'block';
-                } else {
-                    projectsGrid.style.display = 'grid';
-                    emptyState.style.display = 'none';
-                    projectsGrid.innerHTML = projects.map(project => {
-                        const iconHtml = project.icon ? `<img src="${project.icon}" alt="Project Icon" style="width:60px;height:60px;">` : '📁';
-                        const iconClass = 'project-icon project-icon-svg';
-                        return `
-                            <div class="project-card" onclick="openProject('${project.id}')">
-                                <div class="${iconClass}">${iconHtml}</div>
-                                <div class="project-title">${project.title}</div>
-                                <div class="project-meta">Created ${project.date}</div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            } catch (error) {
-                console.error("Error loading projects: ", error);
-                emptyState.style.display = 'block';
-                emptyState.querySelector('.empty-state-text').textContent = 'Error loading projects';
-                projectsGrid.style.display = 'none';
-            }
-        }
-
-        function openProject(projectId) {
-            console.log('Opening project:', projectId);
-            // Navigate to work.html with query param
-            window.location.href = `work.html?project=${encodeURIComponent(projectId)}`;
-        }
-
-        // ICONS & MODAL
-        const userIconPaths = [
-            'svg/1.svg','svg/2.svg','svg/3.svg','svg/4.svg','svg/5.svg','svg/6.svg','svg/7.svg',
-            'svg/8.svg','svg/9.svg','svg/10.svg','svg/11.svg','svg/12.svg','svg/13.svg','svg/14.svg',
-            'svg/15.svg','svg/16.svg','svg/17.svg','svg/18.svg','svg/19.svg','svg/20.svg','svg/21.svg',
-            'svg/22.svg','svg/23.svg','svg/24.svg','svg/25.svg','svg/26.svg','svg/27.svg'
-        ];
-
-        const modalOverlay = document.getElementById('createProjectModalOverlay');
-        const modalContent = document.getElementById('createProjectModalContent');
-        const createProjectForm = document.getElementById('createProjectForm');
-        const iconPicker = document.getElementById('iconPicker');
-        let selectedIconPath = '';
-
-        function populateIconPicker() {
-            iconPicker.innerHTML = '';
-            userIconPaths.forEach((path, index) => {
-                const option = document.createElement('div');
-                option.className = 'icon-option';
-                option.dataset.path = path;
-                const img = document.createElement('img');
-                img.src = path;
-                img.alt = `Icon ${index+1}`;
-                img.onerror = function(){ this.style.display = 'none'; option.textContent = '📦'; option.style.fontSize='24px'; };
-                option.appendChild(img);
-                option.addEventListener('click', () => {
-                    document.querySelectorAll('.icon-option').forEach(opt=>opt.classList.remove('selected'));
-                    option.classList.add('selected');
-                    selectedIconPath = path;
-                });
-                iconPicker.appendChild(option);
-            });
-            if (iconPicker.children.length > 0) {
-                iconPicker.children[0].classList.add('selected');
-                selectedIconPath = iconPicker.children[0].dataset.path;
-            }
-        }
-
-        function openCreateProjectModal() {
-            document.body.classList.add('modal-open');
-            modalOverlay.classList.add('show');
-            createProjectForm.reset();
-            populateIconPicker();
-        }
-
-        function closeCreateProjectModal() {
-            document.body.classList.remove('modal-open');
-            modalOverlay.classList.remove('show');
-        }
-
-        modalOverlay.addEventListener('click', function(event){
-            if (event.target === modalOverlay) closeCreateProjectModal();
-        });
-
-        createProjectForm.addEventListener('submit', async function(event){
-            event.preventDefault();
-            const title = document.getElementById('projectTitle').value;
-            if (!title || !title.trim()) { console.warn('Project title is empty'); return; }
-            if (!selectedIconPath) { console.warn('No icon selected'); return; }
-
-            const { auth, db, addDoc, collection, serverTimestamp } = window.firebaseAuth;
-            const user = auth.currentUser;
-            if (!user || !db) { console.error("Cannot create project, user or db not available"); alert("Error: Not logged in."); return; }
-
-            try {
-                const newProject = {
-                    title: title.trim(),
-                    icon: selectedIconPath,
-                    ownerUid: user.uid,
-                    createdAt: serverTimestamp(),
-                    updatedAt: serverTimestamp(),
-                    nodeCount: 0,
-                    connectionCount: 0
-                };
-                const docRef = await addDoc(collection(db, "projects"), newProject);
-                console.log("Project created with ID:", docRef.id);
-                await loadProjects();
-                closeCreateProjectModal();
-                selectedIconPath = '';
-            } catch (err) {
-                console.error("Error creating project:", err);
-                alert("Failed to create project. Please try again.");
-            }
-        });
-
-        // INITIALIZE (called after auth success)
-        function initializePageContent() {
-            initializeTheme();
-            watchSystemTheme();
-            loadProjects();
-            setTimeout(typeWriter, 500);
-            console.log('✅ Dashboard initialized');
-        }
-    </script>
-</body>
-</html>
-
+            --bg: #FFF9F3;
             --box: #FFD6A4;
             --text: #3B3B3B;
             --border: #E5C299;
@@ -495,6 +24,7 @@
             --card-bg: #FFFFFF;
             --card-hover: #FFE8C5;
             --input-bg: #FFF;
+            --danger: #ff6b6b;
         }
 
         [data-theme="dark"] {
@@ -509,6 +39,7 @@
             --card-bg: #3A3F58;
             --card-hover: #4A4E69;
             --input-bg: #2D3142;
+            --danger: #ff6b6b;
         }
 
         body {
@@ -519,8 +50,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
             padding: 0;
             overflow-x: hidden;
-            /* Hide body until auth check is complete */
-            visibility: hidden;
+            visibility: hidden; /* Hide body until auth check is complete */
         }
 
         /* Header Section */
@@ -536,7 +66,7 @@
             background: var(--bg);
             z-index: 100;
             border-bottom: 2px solid var(--border);
-            transition: filter 0.3s ease; /* For modal blur */
+            transition: filter 0.3s ease;
         }
 
         .brand {
@@ -544,7 +74,7 @@
             font-weight: 700;
             color: var(--text);
         }
-        /* ... existing code ... */
+        
         .brand-tagline {
             font-size: 1rem;
             font-weight: 400;
@@ -594,8 +124,7 @@
             transform: rotate(180deg) scale(1.1);
         }
         
-        /* NEW STYLES FOR PROFILE DROPDOWN */
-
+        /* PROFILE DROPDOWN */
         .profile-dropdown {
             position: relative;
         }
@@ -614,13 +143,13 @@
             font-size: 1.2rem;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px var(--shadow);
-            padding: 0; /* Reset padding for SVG */
+            padding: 0;
         }
         
         .profile-toggle svg {
             width: 24px;
             height: 24px;
-            stroke: var(--text); /* Use text color for icon */
+            stroke: var(--text);
         }
 
         .profile-toggle:hover {
@@ -629,9 +158,9 @@
         }
         
         .profile-menu {
-            display: none; /* Hidden by default */
+            display: none;
             position: absolute;
-            top: 60px; /* Position below the button */
+            top: 60px;
             right: 0;
             background: var(--card-bg);
             border: 2px solid var(--border);
@@ -639,7 +168,7 @@
             box-shadow: 0 8px 25px var(--shadow);
             min-width: 150px;
             z-index: 101;
-            overflow: hidden; /* To ensure border-radius clips children */
+            overflow: hidden;
         }
         
         .profile-menu a {
@@ -649,14 +178,13 @@
             color: var(--text);
             text-decoration: none;
             transition: background-color 0.2s ease;
-            cursor: pointer; /* Add cursor pointer for logout */
+            cursor: pointer;
         }
         
         .profile-menu a:hover {
             background-color: var(--card-hover);
         }
 
-        /* Class to show the menu with JS */
         .profile-menu.show {
             display: block;
         }
@@ -669,7 +197,7 @@
             max-width: 1400px;
             margin-left: auto;
             margin-right: auto;
-            transition: filter 0.3s ease; /* For modal blur */
+            transition: filter 0.3s ease;
         }
 
         .dashboard-header {
@@ -701,7 +229,7 @@
             box-shadow: 0 4px 20px var(--shadow);
             position: relative;
         }
-        /* ... existing code ... */
+
         .add-project-btn:hover {
             transform: rotate(90deg) scale(1.1);
             background: var(--border);
@@ -716,7 +244,7 @@
         /* Projects Grid */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Reduced from 280px */
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 25px;
             margin-top: 30px;
         }
@@ -731,6 +259,9 @@
             box-shadow: 0 4px 15px var(--shadow);
             position: relative;
             overflow: hidden;
+            /* For animation */
+            opacity: 0; 
+            animation: fadeIn 0.5s ease forwards;
         }
 
         .project-card:hover {
@@ -740,9 +271,50 @@
             border-color: var(--accent);
         }
 
+        /* DELETE BUTTON STYLES */
+        .delete-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s ease;
+            color: var(--danger);
+            z-index: 10;
+        }
+
+        .delete-btn:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+            transform: scale(1.1);
+        }
+
+        /* Show delete button when hovering the card */
+        .project-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        /* In dark mode, adjust delete button background */
+        [data-theme="dark"] .delete-btn {
+            background: rgba(45, 49, 66, 0.9); /* dark mode bg */
+        }
+        
+        [data-theme="dark"] .delete-btn:hover {
+            background: var(--danger);
+        }
+
         .project-icon {
-            width: 60px; /* Reduced from 90px */
-            height: 60px; /* Reduced from 90px */
+            width: 60px;
+            height: 60px;
             background: var(--accent);
             border-radius: 12px;
             display: flex;
@@ -753,52 +325,41 @@
             transition: all 0.3s ease;
         }
 
-        /* NEW: Remove background for SVG icons */
         .project-icon.project-icon-svg {
-            background: transparent; /* Remove solid background */
-            font-size: 0; /* Remove font-size intended for emojis */
+            background: transparent;
+            font-size: 0;
         }
         
-        /* NEW: Make sure SVGs in the grid respect the theme */
         .project-icon.project-icon-svg img {
-            filter: invert(0); /* Default for light mode */
-            transition: filter 0.3s ease; /* Smooth theme transition */
+            filter: invert(0);
+            transition: filter 0.3s ease;
         }
 
         [data-theme="dark"] .project-icon.project-icon-svg img {
-             /* Was: filter: invert(1);
-                This new filter forces the icon to black first (brightness(0))
-                and then inverts it to pure white (invert(1)).
-                This is more robust for icons that aren't pure black.
-             */
              filter: brightness(0) invert(1);
         }
 
-        /* --- NEW OVERRIDES --- */
-        /* Force light theme for project cards in dark mode */
+        /* OVERRIDES */
         [data-theme="dark"] .project-card {
-            background: #FFFFFF; /* :root --card-bg */
-            border-color: #E5C299; /* :root --border */
-            box-shadow: rgba(0, 0, 0, 0.1); /* :root --shadow */
+            background: #FFFFFF;
+            border-color: #E5C299;
+            box-shadow: rgba(0, 0, 0, 0.1);
         }
 
         [data-theme="dark"] .project-card:hover {
-            background: #FFE8C5; /* :root --card-hover */
-            border-color: #E4B77A; /* :root --accent */
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* :root --shadow */
+            background: #FFE8C5;
+            border-color: #E4B77A;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         }
 
         [data-theme="dark"] .project-card .project-title,
         [data-theme="dark"] .project-card .project-meta {
-            color: #3B3B3B; /* :root --text */
+            color: #3B3B3B;
         }
 
-        /* Force light theme for project card icons in dark mode */
         [data-theme="dark"] .project-icon.project-icon-svg img {
-            filter: invert(0); /* Revert filter to light mode default */
+            filter: invert(0);
         }
-        /* --- END NEW OVERRIDES --- */
-
 
         .project-card:hover .project-icon {
             transform: scale(1.1) rotate(5deg);
@@ -874,6 +435,11 @@
             .projects-grid {
                 grid-template-columns: 1fr;
             }
+            
+            /* Always show delete button on mobile since hover doesn't exist */
+            .delete-btn {
+                opacity: 1;
+            }
         }
 
         /* Loading Animation */
@@ -887,29 +453,25 @@
                 transform: translateY(0);
             }
         }
-
-        .project-card {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        /* ... existing code ... */
-        .project-card:nth-child(1) { animation-delay: 0.1s; }
-        .project-card:nth-child(2) { animation-delay: 0.2s; }
-        .project-card:nth-child(3) { animation-delay: 0.3s; }
-        .project-card:nth-child(4) { animation-delay: 0.4s; }
-        .project-card:nth-child(5) { animation-delay: 0.5s; }
-        .project-card:nth-child(6) { animation-delay: 0.6s; }
         
-        /* NEW MODAL STYLES */
+        /* Stagger animation for items */
+        .project-card:nth-child(1) { animation-delay: 0.05s; }
+        .project-card:nth-child(2) { animation-delay: 0.1s; }
+        .project-card:nth-child(3) { animation-delay: 0.15s; }
+        .project-card:nth-child(4) { animation-delay: 0.2s; }
+        .project-card:nth-child(5) { animation-delay: 0.25s; }
+        .project-card:nth-child(6) { animation-delay: 0.3s; }
         
+        /* MODAL STYLES */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent background */
-            backdrop-filter: blur(5px); /* Blur effect */
-            display: none; /* Hidden by default */
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -922,7 +484,6 @@
             opacity: 1;
         }
         
-        /* Apply blur to header and main when modal is open */
         body.modal-open header,
         body.modal-open main {
             filter: blur(5px);
@@ -984,9 +545,9 @@
 
         .icon-picker {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Reverted from 110px */
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 10px;
-            max-height: 150px; /* Limit height and allow scroll */
+            max-height: 150px;
             overflow-y: auto;
             padding: 5px;
             background: var(--input-bg);
@@ -995,9 +556,9 @@
         }
 
         .icon-option {
-            width: 80px; /* Reverted from 110px */
-            height: 80px; /* Reverted from 110px */
-            border: 2px solid transparent; /* Placeholder for selection */
+            width: 80px;
+            height: 80px;
+            border: 2px solid transparent;
             border-radius: 10px;
             cursor: pointer;
             display: flex;
@@ -1018,88 +579,81 @@
         }
 
         .icon-option img {
-            width: 60px; /* Reverted from 90px */
-            height: 60px; /* Reverted from 90px */
-            filter: invert(0); /* Default for light mode */
+            width: 60px;
+            height: 60px;
+            filter: invert(0);
         }
         
         [data-theme="dark"] .icon-option img {
-             /* Was: filter: invert(1);
-                Applying the same fix here to the modal.
-             */
              filter: brightness(0) invert(1);
         }
 
-        /* --- NEW OVERRIDES --- */
-        /* Force light theme for modal in dark mode */
+        /* OVERRIDES */
         [data-theme="dark"] .modal-content {
-            background: #FFFFFF; /* :root --card-bg */
-            border-color: #E5C299; /* :root --border */
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* :root --shadow */
+            background: #FFFFFF;
+            border-color: #E5C299;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         }
-        /* ... existing code ... */
+
         [data-theme="dark"] .modal-content h2,
         [data-theme="dark"] .form-group label {
-            color: #3B3B3B; /* :root --text */
+            color: #3B3B3B;
         }
 
         [data-theme="dark"] .form-group input[type="text"] {
-            color: #3B3B3B; /* :root --text */
-            background-color: #FFF; /* :root --input-bg */
-            border-color: #E5C299; /* :root --border */
+            color: #3B3B3B;
+            background-color: #FFF;
+            border-color: #E5C299;
         }
 
         [data-theme="dark"] .form-group input[type="text"]:focus {
-            border-color: #E4B77A; /* :root --accent */
-            box-shadow: 0 0 0 3px rgba(228, 183, 122, 0.5); /* :root --accent with alpha */
+            border-color: #E4B77A;
+            box-shadow: 0 0 0 3px rgba(228, 183, 122, 0.5);
         }
 
         [data-theme="dark"] .icon-picker {
-            background: #FFF; /* :root --input-bg */
-            border-color: #E5C299; /* :root --border */
+            background: #FFF;
+            border-color: #E5C299;
         }
 
         [data-theme="dark"] .icon-option {
-            background-color: #FFFFFF; /* :root --card-bg */
+            background-color: #FFFFFF;
         }
 
         [data-theme="dark"] .icon-option:hover {
-            background-color: #FFE8C5; /* :root --card-hover */
+            background-color: #FFE8C5;
         }
 
         [data-theme="dark"] .icon-option.selected {
-            border-color: #E4B77A; /* :root --accent */
-            background-color: #FFE8C5; /* :root --card-hover */
-            box-shadow: 0 0 0 3px rgba(228, 183, 122, 0.5); /* :root --accent with alpha */
+            border-color: #E4B77A;
+            background-color: #FFE8C5;
+            box-shadow: 0 0 0 3px rgba(228, 183, 122, 0.5);
         }
 
-        /* Force light theme for modal icons in dark mode */
         [data-theme="dark"] .icon-option img {
-            filter: invert(0); /* Revert filter to light mode default */
+            filter: invert(0);
         }
 
         [data-theme="dark"] .btn-primary {
-            background-color: #E4B77A; /* :root --accent */
-            color: #3B3B3B; /* :root --text */
-            border-color: #E5C299; /* :root --border */
+            background-color: #E4B77A;
+            color: #3B3B3B;
+            border-color: #E5C299;
         }
 
         [data-theme="dark"] .btn-primary:hover {
-            background-color: #E5C299; /* :root --border */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* :root --shadow */
+            background-color: #E5C299;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         [data-theme="dark"] .btn-secondary {
-            background-color: #FFE8C5; /* :root --card-hover */
-            color: #3B3B3B; /* :root --text */
-            border-color: #E5C299; /* :root --border */
+            background-color: #FFE8C5;
+            color: #3B3B3B;
+            border-color: #E5C299;
         }
 
         [data-theme="dark"] .btn-secondary:hover {
-            background-color: #FFF9F3; /* :root --bg */
+            background-color: #FFF9F3;
         }
-        /* --- END NEW OVERRIDES --- */
-
 
         .form-actions {
             display: flex;
@@ -1138,13 +692,11 @@
         .btn-secondary:hover {
             background-color: var(--bg);
         }
-        /* ... existing code ... */
     </style>
 </head>
 <body>
     <!-- Header -->
     <header>
-        <!-- ... existing code ... -->
         <div class="brand-section">
             <span class="brand">Ayuna</span>
             <span class="brand-tagline">
@@ -1170,7 +722,6 @@
                 </button>
                 <div class="profile-menu" id="profileMenu">
                     <a href="account.html">Account</a>
-                    <!-- Updated Log Out link -->
                     <a onclick="handleLogout()">Log Out</a>
                 </div>
             </div>
@@ -1179,7 +730,6 @@
 
     <!-- Main Content -->
     <main>
-        <!-- ... existing code ... -->
         <div class="dashboard-header">
             <h1 class="dashboard-title">Your Projects</h1>
             <button class="add-project-btn" onclick="openCreateProjectModal()"></button>
@@ -1200,7 +750,6 @@
 
     <!-- Create Project Modal -->
     <div class="modal-overlay" id="createProjectModalOverlay">
-        <!-- ... existing code ... -->
         <div class="modal-content" id="createProjectModalContent">
             <h2>Create New Project</h2>
             <form id="createProjectForm">
@@ -1222,16 +771,14 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK & Project Logic -->
     <script type="module">
-        // Import the functions you need from the SDKs you need
+        // Import Firebase Functions (Added deleteDoc and doc)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-        // Import Auth functions
+        import { getFirestore, collection, query, where, getDocs, addDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-        // Import Firestore functions
-        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     
-        // Your web app's Firebase configuration
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyC2-Xbb9yP-p1tr5qci59Foq-gdRXgP0-I",
             authDomain: "ayuna-aisahil.firebaseapp.com",
@@ -1244,50 +791,256 @@
     
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        // Initialize Firebase Authentication and get a reference to the service
         const auth = getAuth(app);
-        // Initialize Cloud Firestore and get a reference to the service
         const db = getFirestore(app);
 
-        // --- AUTHENTICATION CHECK ---
-        onAuthStateChanged(auth, (user) => {
+        // Global variable for current user
+        let currentUser = null;
+
+        // --- AUTHENTICATION & DATA LOADING ---
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // User is signed in.
                 console.log('User is logged in:', user.uid);
-                // Show the page content
+                currentUser = user;
                 document.body.style.visibility = 'visible';
-                // Manually trigger DOMContentLoaded logic AFTER auth check
+                
+                // Start UI animations
                 initializePageContent();
+
+                // Load Projects (Check Cache First)
+                await loadProjects(user.uid);
             } else {
-                // User is signed out.
-                console.log('User is not logged in, redirecting to login.html');
-                // Redirect to login page
+                console.log('User is not logged in, redirecting...');
                 window.location.href = 'login.html';
             }
         });
 
-        // Make auth and firestore functions available globally for the next script
+        // --- FIRESTORE & CACHING FUNCTIONS ---
+
+        // Helper: Format Date
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Just now';
+            // If it's already a string (from cache), return it
+            if (typeof timestamp === 'string') return timestamp;
+            
+            // Handle both Firestore Timestamp and standard JS Date objects
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        // Helper: Render the projects to the grid
+        function renderProjects(projects) {
+            const projectsGrid = document.getElementById('projectsGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (projectsGrid) projectsGrid.innerHTML = ''; // Clear existing
+
+            if (projects.length > 0) {
+                if (emptyState) emptyState.style.display = 'none';
+                if (projectsGrid) projectsGrid.style.display = 'grid';
+
+                projects.forEach(project => {
+                    createProjectCard(project);
+                });
+            } else {
+                if (projectsGrid) projectsGrid.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'block';
+            }
+        }
+
+        // Logic: Load Projects (Cache -> Network)
+        async function loadProjects(uid) {
+            const cacheKey = `ayuna_projects_${uid}`;
+            const cachedData = localStorage.getItem(cacheKey);
+
+            if (cachedData) {
+                console.log("⚡ Loading projects from Cache");
+                const projects = JSON.parse(cachedData);
+                renderProjects(projects);
+            } else {
+                console.log("🌐 Cache empty. Fetching from Firestore...");
+                await fetchAndCacheProjects(uid);
+            }
+        }
+
+        // Logic: Fetch from Network and Update Cache
+        async function fetchAndCacheProjects(uid) {
+            try {
+                const q = query(
+                    collection(db, "projects"), 
+                    where("ownerUid", "==", uid)
+                );
+
+                const querySnapshot = await getDocs(q);
+                const projects = [];
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    projects.push({
+                        id: doc.id,
+                        title: data.title,
+                        icon: data.icon,
+                        // Convert timestamp to string immediately for storage
+                        createdAt: formatDate(data.createdAt) 
+                    });
+                });
+
+                // Update Cache
+                localStorage.setItem(`ayuna_projects_${uid}`, JSON.stringify(projects));
+                
+                // Render
+                renderProjects(projects);
+                console.log(`Projects fetched & cached: ${projects.length}`);
+
+            } catch (error) {
+                console.error("Error fetching projects:", error);
+            }
+        }
+
+        // Helper: Create Project Card HTML
+        function createProjectCard(project) {
+            const projectsGrid = document.getElementById('projectsGrid');
+            
+            const card = document.createElement('div');
+            card.className = 'project-card';
+            
+            // Click handler (Open Project)
+            card.onclick = () => {
+                window.location.href = `work.html?id=${project.id}`;
+            };
+
+            const iconHtml = `<img src="${project.icon}" alt="Project Icon" style="width: 60px; height: 60px;">`;
+            
+            // Create Delete Button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+            
+            // Stop Propagation prevents the card click event from firing
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                window.deleteProject(project.id);
+            };
+
+            card.innerHTML = `
+                <div class="project-icon project-icon-svg">${iconHtml}</div>
+                <div class="project-title">${project.title}</div>
+                <div class="project-meta">Created ${project.createdAt}</div>
+            `;
+            
+            // Append delete button to card
+            card.appendChild(deleteBtn);
+
+            if (projectsGrid) {
+                projectsGrid.appendChild(card);
+            }
+        }
+
+        // --- DELETE FUNCTION ---
+        // Attached to window so it can be called globally
+        window.deleteProject = async (projectId) => {
+            if (!confirm("Are you sure you want to delete this project? This cannot be undone.")) {
+                return;
+            }
+
+            try {
+                // 1. Delete from Firestore
+                await deleteDoc(doc(db, "projects", projectId));
+                console.log("Project deleted from Firestore");
+
+                // 2. Update Cache (Manual Filter) to avoid re-fetching
+                const cacheKey = `ayuna_projects_${currentUser.uid}`;
+                let projects = JSON.parse(localStorage.getItem(cacheKey) || "[]");
+                
+                // Filter out the deleted project
+                const updatedProjects = projects.filter(p => p.id !== projectId);
+                
+                // Save back to local storage
+                localStorage.setItem(cacheKey, JSON.stringify(updatedProjects));
+                
+                // 3. Re-render Grid
+                renderProjects(updatedProjects);
+                console.log("Local cache updated.");
+
+            } catch (error) {
+                console.error("Error deleting project:", error);
+                alert("Failed to delete project.");
+            }
+        };
+
+        // --- EXPOSE AUTH TO WINDOW ---
         window.firebaseAuth = {
             auth,
-            signOut,
-            db,
-            collection,
-            query,
-            where,
-            getDocs,
-            addDoc,
-            serverTimestamp
+            signOut
         };
+
+        // --- PROJECT CREATION LOGIC ---
+        const createForm = document.getElementById('createProjectForm');
+        if (createForm) {
+            createForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const titleInput = document.getElementById('projectTitle');
+                const title = titleInput.value;
+                const selectedIcon = window.selectedIconPath;
+
+                if (!title.trim()) {
+                    alert('Please enter a project title');
+                    return;
+                }
+                
+                if (!selectedIcon) {
+                    alert('Please select an icon');
+                    return;
+                }
+
+                if (!currentUser) {
+                    alert('You must be logged in to create a project.');
+                    return;
+                }
+
+                try {
+                    // 1. Add to Firestore
+                    await addDoc(collection(db, "projects"), {
+                        title: title,
+                        icon: selectedIcon,
+                        ownerUid: currentUser.uid,
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp(),
+                        nodeCount: 0,
+                        connectionCount: 0
+                    });
+
+                    // 2. Re-fetch from Firestore to get correct server timestamps
+                    // (Necessary because local clock might differ from server)
+                    await fetchAndCacheProjects(currentUser.uid);
+                    
+                    // 3. UI Cleanup
+                    window.closeCreateProjectModal();
+                    createForm.reset();
+                    window.selectedIconPath = '';
+                    
+                } catch (e) {
+                    console.error("Error adding project: ", e);
+                    alert("Error creating project. Check console.");
+                }
+            });
+        }
+
     </script>
 
 
+    <!-- UI & Animation Script (Standard JS) -->
     <script>
         // ========================================
         // TYPING ANIMATION
         // ========================================
         
         const typingText = "silence for the mind that builds";
-        /* ... existing code ... */
         const typingElement = document.getElementById('typing-text');
         let charIndex = 0;
         let isDeleting = false;
@@ -1316,12 +1069,6 @@
             }
         }
 
-        // Start typing animation on load
-        // window.addEventListener('DOMContentLoaded', () => {
-        //     setTimeout(typeWriter, 500);
-        // });
-        // NOTE: This is now called from initializePageContent()
-
         // ========================================
         // THEME MANAGEMENT
         // ========================================
@@ -1345,17 +1092,13 @@
                 themeIcon.textContent = '🌙';
             }
         }
-        /* ... existing code ... */
+
         function initializeTheme() {
             const userPreference = localStorage.getItem('theme');
-            
             if (userPreference) {
-                console.log('🎨 Loading user theme preference:', userPreference);
                 applyTheme(userPreference);
             } else {
-                const systemTheme = getSystemTheme();
-                console.log('🖥️ Loading system theme preference:', systemTheme);
-                applyTheme(systemTheme);
+                applyTheme(getSystemTheme());
             }
         }
 
@@ -1363,8 +1106,6 @@
             const html = document.documentElement;
             const currentTheme = html.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-            console.log('👤 User manually changed theme to:', newTheme);
             applyTheme(newTheme);
             localStorage.setItem('theme', newTheme);
         }
@@ -1372,34 +1113,26 @@
         function watchSystemTheme() {
             if (window.matchMedia) {
                 const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-                
                 darkModeQuery.addEventListener('change', (e) => {
                     const userPreference = localStorage.getItem('theme');
-                    
                     if (!userPreference) {
-                        const newTheme = e.matches ? 'dark' : 'light';
-                        console.log('🔄 System theme changed to:', newTheme);
-                        applyTheme(newTheme);
+                        applyTheme(e.matches ? 'dark' : 'light');
                     }
                 });
             }
         }
 
         // ========================================
-        // PROFILE MENU
+        // PROFILE MENU & LOGOUT
         // ========================================
 
         function toggleProfileMenu() {
             document.getElementById('profileMenu').classList.toggle('show');
         }
 
-        // Close the dropdown if the user clicks outside of it
         window.addEventListener('click', function(event) {
             const profileMenu = document.getElementById('profileMenu');
             const profileToggle = document.querySelector('.profile-toggle');
-            
-            // Check if the click is outside the menu AND outside the toggle button
-            // Make sure profileToggle exists before checking contains
             if (profileToggle && 
                 profileMenu.classList.contains('show') && 
                 !profileToggle.contains(event.target) && 
@@ -1408,175 +1141,41 @@
             }
         });
 
-        // --- NEW LOGOUT FUNCTION ---
         function handleLogout() {
-            console.log('Logging out...');
             const { auth, signOut } = window.firebaseAuth;
             if (auth) {
                 signOut(auth).then(() => {
-                    // Sign-out successful.
-                    console.log('Logout successful, redirecting to login.html');
+                    // Clear cache on logout to prevent data leakage
+                    localStorage.removeItem(`ayuna_projects_${auth.currentUser.uid}`);
                     window.location.href = 'login.html';
                 }).catch((error) => {
-                    // An error happened.
                     console.error('Logout failed:', error);
-                    alert('Logout failed. Please try again.');
                 });
             }
         }
 
-
         // ========================================
-        // PROJECT MANAGEMENT
-        // ========================================
-
-        /**
-         * Formats a Firestore Timestamp into a readable date string.
-         * @param {object} timestamp - The Firestore Timestamp object (e.g., { seconds: 167... })
-         * @returns {string} - A formatted date string (e.g., "12 Feb 2025")
-         */
-        function formatDate(timestamp) {
-            if (!timestamp || typeof timestamp.seconds !== 'number') {
-                return 'Just now'; // Fallback for new or invalid timestamps
-            }
-            const date = new Date(timestamp.seconds * 1000);
-            const options = { day: 'numeric', month: 'short', year: 'numeric' };
-            return date.toLocaleDateString('en-GB', options); // 'en-GB' gives "12 Feb 2025" format
-        }
-
-        // loadProjects is now async and fetches from Firestore
-        async function loadProjects() {
-            const projectsGrid = document.getElementById('projectsGrid');
-            const emptyState = document.getElementById('emptyState');
-            
-            // Get Firebase tools from the module script
-            const { auth, db, collection, query, where, getDocs } = window.firebaseAuth;
-
-            if (!auth || !db) {
-                console.error("Firebase is not ready.");
-                emptyState.style.display = 'block';
-                projectsGrid.style.display = 'none';
-                return;
-            }
-
-            const user = auth.currentUser;
-            if (!user) {
-                console.log("No user found, loadProjects will not run.");
-                return; 
-            }
-
-            try {
-                // Query projects where ownerUid matches the current user's UID
-                const q = query(collection(db, "projects"), where("ownerUid", "==", user.uid));
-                const querySnapshot = await getDocs(q);
-
-                let projects = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    projects.push({
-                        id: doc.id,
-                        title: data.title,
-                        icon: data.icon,
-                        date: formatDate(data.createdAt) // Format the timestamp
-                    });
-                });
-
-                // Log the count as requested
-                console.log("Projects loaded:", projects.length);
-
-                if (projects.length === 0) {
-                    projectsGrid.style.display = 'none';
-                    emptyState.style.display = 'block';
-                } else {
-                    projectsGrid.style.display = 'grid';
-                    emptyState.style.display = 'none';
-                    
-                    // Render projects using the same logic as before
-                    projectsGrid.innerHTML = projects.map(project => {
-                        const iconHtml = `<img src="${project.icon}" alt="Project Icon" style="width: 60px; height: 60px;">`;
-                        const iconClass = 'project-icon project-icon-svg';
-
-                        // Pass the string ID to openProject
-                        return `
-                            <div class="project-card" onclick="openProject('${project.id}')">
-                                <div class="${iconClass}">${iconHtml}</div>
-                                <div class="project-title">${project.title}</div>
-                                <div class="project-meta">Created ${project.date}</div>
-                            </div>
-                        `
-                    }).join('');
-                }
-
-            } catch (error) {
-                console.error("Error loading projects: ", error);
-                emptyState.style.display = 'block';
-                emptyState.querySelector('.empty-state-text').textContent = 'Error loading projects';
-                projectsGrid.style.display = 'none';
-            }
-        }
-
-        function openProject(projectId) {
-            console.log('Opening project:', projectId);
-            // Navigate to project details page
-            // We can pass the project ID in the URL
-            window.location.href = `work.html?project=${projectId}`;
-        }
-        }
-
-        function openProject(projectId) {
-            console.log('Opening project:', projectId);
-            // Navigate to project details page
-            window.location.href = 'work.html';
-            // alert(`Opening project ${projectId}. (Project detail page coming soon!)`);
-        }
-        /* ... existing code ... */
-        // REMOVED: function redirectToWork() {}
-        // The + button now opens the modal
-
-        // ========================================
-        // CREATE PROJECT MODAL
+        // MODAL & ICON PICKER
         // ========================================
 
-        // DEFINE YOUR SVG ICON PATHS HERE
-        // The user can add their paths to this array
         const userIconPaths = [
-            'svg/1.svg',
-            'svg/2.svg',
-            'svg/3.svg',
-            'svg/4.svg',
-            'svg/5.svg',
-            'svg/6.svg',
-            'svg/7.svg',
-            'svg/8.svg',
-            'svg/9.svg',
-            'svg/10.svg',
-            'svg/11.svg',
-            'svg/12.svg',
-            'svg/13.svg',
-            'svg/14.svg',
-            'svg/15.svg',
-            'svg/16.svg',
-            'svg/17.svg',
-            'svg/18.svg',
-            'svg/19.svg',
-            'svg/20.svg',
-            'svg/21.svg',
-            'svg/22.svg',
-            'svg/23.svg',
-            'svg/24.svg',
-            'svg/25.svg',
-            'svg/26.svg',
-            'svg/27.svg',
+            'svg/1.svg', 'svg/2.svg', 'svg/3.svg', 'svg/4.svg', 'svg/5.svg',
+            'svg/6.svg', 'svg/7.svg', 'svg/8.svg', 'svg/9.svg', 'svg/10.svg',
+            'svg/11.svg', 'svg/12.svg', 'svg/13.svg', 'svg/14.svg', 'svg/15.svg',
+            'svg/16.svg', 'svg/17.svg', 'svg/18.svg', 'svg/19.svg', 'svg/20.svg',
+            'svg/21.svg', 'svg/22.svg', 'svg/23.svg', 'svg/24.svg', 'svg/25.svg',
+            'svg/26.svg', 'svg/27.svg'
         ];
 
         const modalOverlay = document.getElementById('createProjectModalOverlay');
-        const modalContent = document.getElementById('createProjectModalContent');
         const createProjectForm = document.getElementById('createProjectForm');
         const iconPicker = document.getElementById('iconPicker');
-        let selectedIconPath = ''; // To store the chosen icon path
+        
+        // Global variable to share selection with the Module Script
+        window.selectedIconPath = ''; 
 
         function populateIconPicker() {
-            iconPicker.innerHTML = ''; // Clear existing icons
+            iconPicker.innerHTML = ''; 
             userIconPaths.forEach((path, index) => {
                 const option = document.createElement('div');
                 option.className = 'icon-option';
@@ -1585,126 +1184,61 @@
                 const img = document.createElement('img');
                 img.src = path;
                 img.alt = `Icon ${index + 1}`;
-                
-                // Add a fallback for broken images
                 img.onerror = function() { 
-                    this.style.display = 'none'; // Hide broken image
-                    option.textContent = '📦'; // Show a fallback emoji
-                    option.style.fontSize = '24px';
+                    this.style.display = 'none'; 
+                    option.textContent = '📦'; 
                 };
 
                 option.appendChild(img);
                 
                 option.addEventListener('click', () => {
-                    // Remove 'selected' from all other options
                     document.querySelectorAll('.icon-option').forEach(opt => {
                         opt.classList.remove('selected');
                     });
-                    // Add 'selected' to the clicked option
                     option.classList.add('selected');
-                    selectedIconPath = path; // Store the selected path
+                    window.selectedIconPath = path; // Update global variable
                 });
                 
                 iconPicker.appendChild(option);
             });
             
-            // Auto-select the first icon
+            // Auto-select first icon
             if (iconPicker.children.length > 0) {
                 iconPicker.children[0].classList.add('selected');
-                selectedIconPath = iconPicker.children[0].dataset.path;
+                window.selectedIconPath = iconPicker.children[0].dataset.path;
             }
         }
 
         function openCreateProjectModal() {
-            document.body.classList.add('modal-open'); // Blur background
+            document.body.classList.add('modal-open');
             modalOverlay.classList.add('show');
-            createProjectForm.reset(); // Clear form
-            populateIconPicker(); // Re-populate icons
+            createProjectForm.reset();
+            populateIconPicker();
         }
 
-visible-part-of-long-file-ends-here
-        function closeCreateProjectModal() {
-            document.body.classList.remove('modal-open'); // Unblur background
+        // Make this globally available so the Module Script can call it
+        window.closeCreateProjectModal = function() {
+            document.body.classList.remove('modal-open');
             modalOverlay.classList.remove('show');
         }
 
-        // Close modal if user clicks on the overlay (but not the content)
         modalOverlay.addEventListener('click', function(event) {
             if (event.target === modalOverlay) {
                 closeCreateProjectModal();
             }
         });
 
-        // Handle the project creation - NOW SAVES TO FIRESTORE
-        createProjectForm.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Stop form from submitting normally
-            
-            const title = document.getElementById('projectTitle').value;
-            
-            if (!title.trim()) {
-                console.warn('Project title is empty');
-                return;
-            }
-            
-            if (!selectedIconPath) {
-                console.warn('No icon selected');
-                return;
-            }
-
-            // Get Firebase tools
-            const { auth, db, addDoc, collection, serverTimestamp } = window.firebaseAuth;
-            const user = auth.currentUser;
-
-            if (!user || !db) {
-                console.error("Cannot create project, user or db not available");
-                alert("Error: Not logged in.");
-                return;
-            }
-
-            try {
-                // Create the new project object for Firestore
-                const newProject = {
-                    title: title,
-                    icon: selectedIconPath,
-                    ownerUid: user.uid,
-                    createdAt: serverTimestamp(), // Use server timestamp
-                    updatedAt: serverTimestamp(),
-                    nodeCount: 0,
-                    connectionCount: 0
-                };
-
-                // Add the new project to the "projects" collection
-                const docRef = await addDoc(collection(db, "projects"), newProject);
-                console.log("Project created with ID: ", docRef.id);
-                
-                loadProjects(); // Refresh the dashboard grid from Firestore
-                closeCreateProjectModal(); // Close the modal
-                
-                // Clear selection for next time
-                selectedIconPath = '';
-
-            } catch (error) {
-                console.error("Error creating project: ", error);
-                alert("Failed to create project. Please try again.");
-            }
-        });
-
-
         // ========================================
-        // INITIALIZE
+        // INITIALIZE UI
         // ========================================
         
-        // This function is now called by the auth state listener
+        // Called from the Module script after Auth is confirmed
         function initializePageContent() {
             initializeTheme();
             watchSystemTheme();
-            loadProjects(); // This will now load purely from localStorage
-            setTimeout(typeWriter, 500); // Start typing animation
-            console.log('✅ Dashboard initialized');
+            setTimeout(typeWriter, 500);
+            console.log('✅ UI Initialized');
         }
-
-        // Removed the DOMContentLoaded listener as auth check handles initialization
-        // window.addEventListener('DOMContentLoaded', () => { ... });
     </script>
 </body>
 </html>
