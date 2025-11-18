@@ -19,7 +19,16 @@
       --coord-text: rgba(212, 165, 116, 0.4); --coord-origin: rgba(212, 165, 116, 0.8);
     }
     html, body { height: 100%; overflow: hidden; }
-    body { background: var(--bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--text); transition: background-color 0.3s ease, color 0.3s ease; }
+    
+    body { 
+        background: var(--bg); 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        color: var(--text); 
+        transition: background-color 0.3s ease, color 0.3s ease;
+        /* HIDE BODY UNTIL AUTH CHECK IS COMPLETE */
+        visibility: hidden; 
+    }
+
     canvas { position: fixed; inset: 0; cursor: grab; }
     canvas.dragging { cursor: grabbing; }
     .coordinate { position: absolute; font-size: 10px; font-family: 'Courier New', monospace; color: var(--coord-text); user-select: none; pointer-events: none; font-weight: 500; padding: 2px 4px; }
@@ -90,6 +99,7 @@
     <p>Dump Your Ideas without distraction...</p>
   </div>
 
+  <!-- CANVAS LOGIC -->
   <script>
     // ========================================
     // THEME MANAGEMENT
@@ -141,10 +151,12 @@
 
     let GRID_SIZE = 60; // This will be the BASE grid size
     let isDragging = false, startX = 0, startY = 0;
-    let offsetX = width / 2, offsetY = height / 2;
     
-    // NEW ZOOM VARS
-    let zoom = 1;
+    // CHANGED TO VAR FOR GLOBAL ACCESS BY FIRESTORE SCRIPT
+    var offsetX = width / 2, offsetY = height / 2;
+    
+    // NEW ZOOM VARS (CHANGED TO VAR)
+    var zoom = 1;
     const ZOOM_MIN = 0.65;
     const ZOOM_MAX = 1.3;
     const ZOOM_SENSITIVITY = 0.0015;
@@ -152,10 +164,12 @@
     let effectiveScale = GRID_SIZE * zoom; 
     // END NEW ZOOM VARS
 
-    setTimeout(() => instructions.classList.add('hidden'), 4000);
+    setTimeout(() => instructions.classList.add('hidden'), 2000);
 
-    let nodes = [], nodeIdCounter = 0;
-    let connections = [], connectionIdCounter = 0;
+    // CHANGED TO VAR FOR GLOBAL ACCESS BY FIRESTORE SCRIPT
+    var nodes = [], nodeIdCounter = 0;
+    var connections = [], connectionIdCounter = 0;
+    
     let isDraggingNode = false, draggingNodeId = null;
     let isConnecting = false, connectingFrom = null;
     let mouseX = 0, mouseY = 0;
@@ -1073,7 +1087,305 @@
       draw();
       console.log('✅ Grid canvas with DYNAMIC nodes, H-layout & undo/redo initialized');
       console.log('🎮 Controls: Drag=pan, Scroll=zoom, Port drag=connect, Double-click=edit, +=add node');
+
+      // Initialize Firestore logic now that the canvas is ready
+      if (window.initFirestore) window.initFirestore();
     });
+  </script>
+
+  <!-- FIREBASE FIRESTORE LOGIC -->
+  <script type="module">
+    // CONSOLIDATED FIREBASE IMPORTS
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, writeBatch, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // 1. Config & Init
+    const firebaseConfig = {
+        apiKey: "AIzaSyC2-Xbb9yP-p1tr5qci59Foq-gdRXgP0-I",
+        authDomain: "ayuna-aisahil.firebaseapp.com",
+        projectId: "ayuna-aisahil",
+        storageBucket: "ayuna-aisahil.firebasestorage.app",
+        messagingSenderId: "449502543217",
+        appId: "1:449502543217:web:c2a1e24b11ca273cf14ad0",
+        measurementId: "G-E6YX7SXREH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // 2. Auth Check (Moved from the first script)
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            console.warn("No user found. Redirecting to login...");
+            window.location.href = 'login.html';
+        } else {
+            console.log("User authenticated:", user.uid);
+            document.body.style.visibility = 'visible';
+            window.currentUserUid = user.uid;
+        }
+    });
+
+    // 3. State & Utils
+    let unsavedChanges = false;
+    const projectId = getProjectIdFromURL();
+    
+    function getProjectIdFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('id');
+    }
+
+    function debounce(func, delay = 300) {
+        let t;
+        return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => func(...args), delay);
+        };
+    }
+
+    // 4. UI Injection
+    function insertSaveButton() {
+        const backBtn = document.querySelector(".back-btn");
+        if (backBtn) {
+            const saveBtn = document.createElement("button");
+            saveBtn.id = "saveProjectBtn";
+            saveBtn.textContent = "Save";
+            // Match existing back-btn styling logic roughly or inherit defaults
+            saveBtn.className = "back-btn"; 
+            saveBtn.style.left = "130px"; // Offset from back button
+            saveBtn.style.background = "var(--accent)";
+            saveBtn.style.borderColor = "var(--accent)";
+            saveBtn.style.color = "#fff";
+            
+            saveBtn.onclick = saveAllToFirestore;
+            
+            // Insert after back button
+            backBtn.parentNode.insertBefore(saveBtn, backBtn.nextSibling);
+        }
+    }
+
+    function setupExitProtection() {
+        window.addEventListener("beforeunload", (e) => {
+            if (unsavedChanges) {
+                e.preventDefault();
+                e.returnValue = "You have unsaved changes in your project. Save before exiting?";
+            }
+        });
+    }
+
+    // 5. Data Logic
+    async function loadProject(pid) {
+        if (!pid) return;
+
+        const cacheKey = `ayuna-project-${pid}`;
+        const cached = localStorage.getItem(cacheKey);
+
+        if (cached) {
+            console.log("📦 Loading from Local Cache");
+            try {
+                const data = JSON.parse(cached);
+                applyProjectData(data);
+            } catch (e) {
+                console.error("Cache parse error, falling back to DB", e);
+                await fetchFromFirestore(pid);
+            }
+        } else {
+            console.log("🔥 Loading from Firestore");
+            await fetchFromFirestore(pid);
+        }
+    }
+
+    async function fetchFromFirestore(pid) {
+        try {
+            // Parallel fetch
+            const [nodesSnap, connSnap, metaSnap] = await Promise.all([
+                getDocs(collection(db, "projects", pid, "nodes")),
+                getDocs(collection(db, "projects", pid, "connections")),
+                getDoc(doc(db, "projects", pid, "meta", "state"))
+            ]);
+
+            const loadedNodes = [];
+            nodesSnap.forEach(doc => loadedNodes.push(doc.data()));
+
+            const loadedConns = [];
+            connSnap.forEach(doc => loadedConns.push(doc.data()));
+
+            let loadedMeta = { zoom: 1, offset: { x: 0, y: 0 } };
+            if (metaSnap.exists()) {
+                loadedMeta = metaSnap.data();
+            }
+
+            const data = {
+                nodes: loadedNodes,
+                connections: loadedConns,
+                meta: loadedMeta
+            };
+
+            // Update Cache & UI
+            localStorage.setItem(`ayuna-project-${pid}`, JSON.stringify(data));
+            applyProjectData(data);
+
+        } catch (error) {
+            console.error("Error loading project:", error);
+            // Silent error or minor alert, don't block
+        }
+    }
+
+    function applyProjectData(data) {
+        // Access global variables from the existing script
+        // We changed 'let nodes' to 'var nodes' so window.nodes works
+        if (window.nodes) window.nodes.length = 0; 
+        if (data.nodes) window.nodes.push(...data.nodes);
+
+        if (window.connections) window.connections.length = 0;
+        if (data.connections) window.connections.push(...data.connections);
+
+        if (data.meta) {
+            if (typeof data.meta.zoom === 'number') window.zoom = data.meta.zoom;
+            if (data.meta.offset) {
+                window.offsetX = data.meta.offset.x;
+                window.offsetY = data.meta.offset.y;
+            }
+        }
+
+        // Update IDs counters to prevent collisions
+        if (window.nodes) {
+             window.nodeIdCounter = window.nodes.reduce((max, n) => Math.max(max, parseInt(n.id.split('-')[1]) || 0), 0);
+        }
+        if (window.connections) {
+             window.connectionIdCounter = window.connections.reduce((max, c) => Math.max(max, parseInt(c.id.split('-')[1]) || 0), 0);
+        }
+
+        // Redraw
+        if (window.draw) window.draw();
+        // updateRouting check removed as it does not exist in work.html
+    }
+
+    async function saveAllToFirestore() {
+        if (!projectId) return;
+        if (!auth.currentUser) {
+            alert("You must be logged in to save.");
+            return;
+        }
+
+        const btn = document.getElementById("saveProjectBtn");
+        const originalText = btn.textContent;
+        btn.textContent = "Saving...";
+        btn.disabled = true;
+
+        try {
+            const batch = writeBatch(db);
+            const now = new Date(); // Use local date for cache, serverTimestamp for DB
+
+            // 1. Nodes
+            window.nodes.forEach(node => {
+                const nodeRef = doc(db, "projects", projectId, "nodes", node.id);
+                // Update in-memory object timestamps
+                if (!node.createdAt) node.createdAt = now.getTime(); 
+                node.updatedAt = now.getTime();
+
+                batch.set(nodeRef, {
+                    ...node,
+                    createdAt: node.createdAt === now.getTime() ? serverTimestamp() : Timestamp.fromMillis(node.createdAt),
+                    updatedAt: serverTimestamp()
+                });
+            });
+
+            // 2. Connections
+            window.connections.forEach(conn => {
+                const connRef = doc(db, "projects", projectId, "connections", conn.id);
+                if (!conn.createdAt) conn.createdAt = now.getTime();
+                
+                batch.set(connRef, {
+                    ...conn,
+                    createdAt: conn.createdAt === now.getTime() ? serverTimestamp() : Timestamp.fromMillis(conn.createdAt)
+                });
+            });
+
+            // 3. Meta
+            const metaRef = doc(db, "projects", projectId, "meta", "state");
+            const metaData = {
+                zoom: window.zoom,
+                offset: { x: window.offsetX, y: window.offsetY },
+                lastEditedAt: serverTimestamp()
+            };
+            batch.set(metaRef, metaData);
+
+            // Commit
+            await batch.commit();
+
+            // Success
+            unsavedChanges = false;
+            saveToCache(); // Update local cache with the new timestamps
+            btn.textContent = "Saved!";
+            setTimeout(() => { 
+                btn.textContent = originalText; 
+                btn.disabled = false; 
+            }, 2000);
+
+        } catch (error) {
+            console.error("Save failed:", error);
+            alert("Error saving project: " + error.message);
+            btn.textContent = "Error";
+            btn.disabled = false;
+        }
+    }
+
+    function saveToCache() {
+        if (!projectId) return;
+        const data = {
+            nodes: window.nodes,
+            connections: window.connections,
+            meta: {
+                zoom: window.zoom,
+                offset: { x: window.offsetX, y: window.offsetY },
+                lastEditedAt: Date.now()
+            }
+        };
+        localStorage.setItem(`ayuna-project-${projectId}`, JSON.stringify(data));
+    }
+
+    // 6. Event Hooking
+    function setupHooks() {
+        // Hook into the existing pushSnapshot global function
+        // This covers: add/move/edit node, add connection, pan (pointerup)
+        if (window.pushSnapshot) {
+            const originalPush = window.pushSnapshot;
+            window.pushSnapshot = function(label) {
+                originalPush(label); // Call original logic
+                unsavedChanges = true;
+                saveToCache();
+            };
+        }
+
+        // Hook into Zoom (Wheel) separately as existing code doesn't use pushSnapshot for zoom
+        const canvas = document.getElementById('gridCanvas');
+        const debouncedZoomSave = debounce(() => {
+            unsavedChanges = true;
+            saveToCache();
+        }, 500);
+
+        if (canvas) {
+            canvas.addEventListener('wheel', debouncedZoomSave);
+        }
+    }
+
+    // 7. Initialize
+    // This function is attached to the window and called by the main canvas script
+    // once it has finished initializing its own global variables.
+    window.initFirestore = async function() {
+        if (!projectId) return;
+        // A small delay can help ensure all DOM elements are fully ready.
+        setTimeout(async () => {
+            setupHooks();
+            insertSaveButton();
+            setupExitProtection();
+            await loadProject(projectId);
+        }, 100);
+    };
   </script>
 </body>
 </html>
